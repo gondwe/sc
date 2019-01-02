@@ -74,6 +74,27 @@ function dataTableModals()
   </div>
 </div>
 
+   <!-- new modal  -->
+<div class="modal fade bd-example-modal-lg" id="newModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Add </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-primary">Send message</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
 
    <!-- deleting modal  -->
 <div class="modal fade" id="exampleModalDel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -107,6 +128,17 @@ $('#exampleModal').on('show.bs.modal', function (event) {
   var modal = $(this)
   modal.find('.modal-title').text('Edit ' + title)
     $.get("<?=base_url('crud/ajaxEdit/')?>" + title.toLowerCase() + '/' + id, function(dat){
+        modal.find('.modal-body').html(dat)
+    })
+})
+
+$('#newModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var id = button.data('id') // Extract info from data-* attributes
+  var title = button.data('title') // Extract info from data-* attributes
+  var modal = $(this)
+  modal.find('.modal-title').text('Edit ' + title)
+    $.get("<?=base_url('crud/ajaxNew/')?>" + title.toLowerCase() + '/' + id, function(dat){
         modal.find('.modal-body').html(dat)
     })
 })
@@ -145,6 +177,31 @@ function activeModules($active, $modules, $base='config')
 
 
 
+
+
+function table(Array $tbody, $class=''){
+  openDataTables();
+  $th = array_shift($tbody);
+    ?>
+    <table class="<?=$class?>" style='width:98%; margin:5px  '>
+      <thead style="background:#dcdcdc">
+          <tr>
+            <?php foreach ($th as $title):
+                  echo "<th style='padding-left:3px'>{$title}</th>";
+            endforeach;?>
+          </tr>
+      </thead>
+      <tbody>
+          <?php foreach ($tbody as $tr):
+                  echo "<tr>";
+              foreach ($tr as $td) {
+                  echo "<td style='padding-left:5px'>{$td}</td>";
+              }
+              echo "</tr>";
+          endforeach;?>
+      </tbody>
+    </table>
+<?php closeDataTables(0); }
 
 
 
@@ -206,5 +263,10 @@ function image($url,$tbl=null){
 
 
 function linkTo($disp,$url){
-  echo '<a class="btn btn-success btn-sm" href="'.base_url($url).'" role="button">'.$disp.'</a>';
+  echo '<a class="btn btn-success btn-sm m-1" href="'.base_url($url).'" role="button">'.$disp.'</a>';
+}
+
+
+function printButton($div, $url, $view){
+  echo '<p  data-div="'.$div.'" data-url="'.$url.'" data-view="'.$view.'" class="printer hide-print pull-right btn btn-info btn-sm" style="margin:3px">PRINT</p>';
 }

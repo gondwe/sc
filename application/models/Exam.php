@@ -37,11 +37,17 @@ class Exam extends CI_Model {
 
     public function allSubjects()
     {
-        $this->allSubjects = $this->db->select('code,name')->get('subjects')->result();
+        $this->allSubjects = $this->db->select('code,name,abbr')->get('subjects')->result();
 
         return $this->allSubjects;
     }
 
+	public function classes()
+	{
+	
+		return $classes = $this->db->get('classes')->result();
+	
+	}
 
     protected function registeredCodes()
     {
@@ -141,9 +147,9 @@ class Exam extends CI_Model {
 	public function registerSubject($code)
 	{
 	
-		$broadsheet = "alter table broadsheet add `$code` varchar(3)";
+		$broadsheet = "alter table broadsheet add `$code` varchar(3) default ''";
 		
-		$analysisSheet = "alter table analysis_sheet add (`$code` varchar(3),`".$code."p` varchar(3),`".$code."g` varchar(3),`".$code."r` varchar(3)) ";
+		$analysisSheet = "alter table analysis_sheet add (`$code` varchar(3) default '',`".$code."p` varchar(3) default '',`".$code."g` varchar(3) default '',`".$code."r` varchar(3) default '') ";
 		
 		$this->db->query($broadsheet);
 		
@@ -185,7 +191,7 @@ class Exam extends CI_Model {
 				
 					';
 					foreach ($found as $id => $e):
-						echo "<li><a class='btn btn-success' href='".base_url('exams/analysis/'.$e->id)."'>Analyze $e->name</a></li>";
+						echo "<p><a class='ml-md-3 btn btn-success' href='".base_url('exams/analyze/'.$e->id)."'>Analyze $e->name</a></p>";
 					endforeach;
 					echo '
 				
@@ -209,7 +215,11 @@ class Exam extends CI_Model {
 
         $examsFound = $this->db->where($where)->get('exam_enrolments')->result();
         
-		if(is_null($examsFound) || empty($examsFound)){ echo "No Exams Enroled / Found".linkTo('Create Exam','exams/new/'.$class); }else{
+		if(is_null($examsFound) || empty($examsFound)){ 
+			echo "<p>No Exams Enroled / Found</p>";
+			linkTo('Create New Exam','exams/new/'); 
+			linkTo('Enrol This Class','exams/new/'.$class); 
+		}else{
 		
 		/* get list of terms */
 		$terms = $this->db->where('a','terms')->select('id,ucase(b) term')->get('vdata')->result();
@@ -236,6 +246,84 @@ class Exam extends CI_Model {
 			
 			';
 		}
-    }
+	}
+	
+
+	public function rebuildPointsRemarks()
+	{
+	
+		$rpg = $this->db->get('rpg')->result();
+
+		$classes = array_column($this->classes(),'id');
+
+		$codes = $this->registeredCodes();
+        
+        foreach($classes as $class){
+
+            foreach($codes as $code){
+
+                foreach($rpg as $r){
+
+                    $com[] =  [ 
+                        'code'=>$code, 
+                        'grade'=>$r->g,
+                        'points'=>$r->p,
+                        'lowest'=>$r->lowest,
+                        'highest'=>$r->highest,
+                        'remarks'=>$r->r,
+                        'class'=>$class,
+                    ];
+                }
+            }
+		} 
+		
+		return $com;
+	
+	}
+
+
+	public function saveMarkEntry($id, $subj, $mark, $admNo)
+	{
+
+		$exam = (Object) $_POST;
+	
+        if($mark == "-" ){
+        
+            $this->db->query("update broadsheet set `$subj` = '' where id = '$id'");
+        
+            $this->db->query("update analysis_sheet set `$subj` = '' where adm_no = '$admNo' and exam_code = '$exam->id'");
+        
+        }else{
+        
+            /* save to the broadshheet */
+            $this->db->query("update broadsheet set `$subj` = '$mark' where id = '$id'");
+        
+            /* save to the analysis sheet */
+            $this->db->query("update analysis_sheet set `$subj` = '".round(($mark/$exam->outof)*100)."' where adm_no = '$admNo' and exam_code = '$exam->id'");
+        
+        } 
+	
+	}
+
+
+	public function saveGradeEdit($id,$field, $mark)
+	{
+	
+		$sql = "";
+
+        if($mark > 0 && $mark < 101 && $field <> 'remarks') {
+            
+            $sql = "update subject_grades set `$field` = '$mark' where id = '$id'";
+            
+        }
+        if($field == 'remarks'){
+            
+            $sql = "update subject_grades set `$field` = '$mark' where id = '$id'";
+            
+        }
+        
+        if($sql !== "") $this->db->query($sql); 
+	
+	}
 
 }

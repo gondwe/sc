@@ -1,17 +1,10 @@
 <?php $_SESSION["user_id"] || beefSecurity(); ?>
 
-<?php $this->load->view('section/meta')?>
+<?php $this->load->view('section/parts/meta')?>
 
-<link rel="stylesheet" href="<?=base_url('assets/css/bootstrap.min.css')?>"> 
-<link rel="stylesheet" href="<?=base_url('assets/css/font-awesome.min.css')?>"> 
-
-	
-	<script src='<?=base_url('assets/js/jquery-3.3.1.min.js')?>' ></script>
-	<script src="<?=base_url("assets/js/popper.min.js")?>" ></script>
-	<script src="<?=base_url("assets/js/bootstrap.min.js")?>" ></script>
 
 <div class="clearfix">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="background: #9C27B0 !important;">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="">
   <a class="navbar-brand" href="<?=base_url('/')?>">Apriman</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>

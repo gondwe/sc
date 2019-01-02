@@ -19,21 +19,29 @@ class Exams extends MX_Controller {
     {
 
         $data = $this->Exam->dashboard($action);
+
         $data['modules'] = $this->Exam->modules();
+        
         $data["active"] = "dashboard";
+        
         serve('dashboard', $data);
     }
 
 
     public function config($active = 'subjects')
     {   
-
-        
+      
         $data['allSubjects'] = $this->Exam->allSubjects();
+        
         $data['subjects'] = $this->Exam->subjects();
+        
+        $data['classes'] = $this->Exam->classes();
+        
         $data["modules"] = ['subjects','grading'];
+        
         $data['active'] = $active;
-         serve("config/$active", $data) ;
+        
+        serve("config/$active", $data) ;
     
     }
 
@@ -60,17 +68,18 @@ class Exams extends MX_Controller {
          /* check if subject in broadsheet */
         $codes = array_column($this->Exam->subjects(),'code');
 
-        if(in_array($code, $odes)){
-             $this->Exam->deregisterSubject($code);
-        }else{
-            $this->Exam->registerSubject($code);
-        }
+        $action = in_array($code, $codes) ? "deregisterSubject" : "registerSubject";
+
+        $this->Exam->$action($code);
     
     }
 
     public function rebuildPointsRemarks()
     {
-
+        $com = $this->Exam->rebuildPointsRemarks();
+        
+        $this->db->insert_batch('subject_grades',$com);
+        
     }
 
 
@@ -83,11 +92,10 @@ class Exams extends MX_Controller {
         serve('analysis/dashboard',$data);
     
     }
+ 
+    public function ajaxTerms($i) { $this->Exam->ajaxTerms($i); }
 
-    public function ajaxTerms($i)
-    {
-        $this->Exam->ajaxTerms($i);
-    }
+    public function ajaxTermExam($i,$j) { $this->Exam->ajaxTermExam($i,$j); }
 
     public function analyze($param)
     {
@@ -103,26 +111,8 @@ class Exams extends MX_Controller {
     }
 
 
-    public function saveMarkEntry($id, $subj, $mark, $admNo)
-    {
+    public function saveMarkEntry($id, $subj, $mark, $admNo) { $this->Exam->saveMarkEntry($id, $subj, $mark, $admNo); }
 
-        $exam = (Object) $_POST;
-        // pf($exam);
 
-        if($mark == "-" ){
-        
-            $this->db->query("update broadsheet set `$subj` = '' where id = '$id'");
-        
-            $this->db->query("update analysis_sheet set `$subj` = '' where adm_no = '$admNo' and exam_code = '$exam->id'");
-        
-        }else{
-        
-            /* save to the broadshheet */
-            $this->db->query("update broadsheet set `$subj` = '$mark' where id = '$id'");
-        
-            /* save to the analysis sheet */
-            $this->db->query("update analysis_sheet set `$subj` = '".round(($mark/$exam->outof)*100)."' where adm_no = '$admNo' and exam_code = '$exam->id'");
-        
-        }
-    }
+    public function saveGradeEdit($id,$field, $mark){ $this->Exam->saveGradeEdit($id,$field, $mark); }
 }

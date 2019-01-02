@@ -44,6 +44,10 @@ class Fieldsets {
 				$this->combos("house", "select id, name from dorms");
 				$this->order_by("created_at", "desc");
 			break;
+
+			case "exams" : 
+				$this->combos('counts',[1=>'YES',0=>'NO']);
+			break;
 		}
 		
 	}
